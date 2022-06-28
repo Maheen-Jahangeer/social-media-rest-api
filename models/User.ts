@@ -38,6 +38,18 @@ export const UserSchema = new mongoose.Schema({
     isAdmin:{
         type:Boolean,
         default:false
+    },
+    country:{
+        type:String,
+        default:""
+    },
+    from:{
+        type:String,
+        default:""
+    },
+    relationship:{
+        type:Number,
+        enum:[1,2,3]
     }
 })
 
