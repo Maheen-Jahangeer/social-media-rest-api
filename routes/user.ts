@@ -2,7 +2,8 @@ import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User";
 import { response } from "../helpers/response";
-import { ObjectId } from "mongoose";
+import {ObjectID, ObjectId} from 'mongodb'
+import { isObjectIdOrHexString } from "mongoose";
 
 const userRouter  = express.Router();
 
@@ -101,6 +102,63 @@ userRouter.get('/:id', async (req,res)=> {
     }
 })
 
+//follow user
+userRouter.put('/:id/follow',async(req,res)=> {
+    if(req.body.userId !== req.params.id){
+        const user = await User.findById(req.params.id)
+        const currentUser = await User.findById(req.body.userId)
+        if(!currentUser?.followers?.includes(user?.id)){
+            await currentUser?.updateOne({$push:{followers: new ObjectId(req.params.id).toHexString()}})
+            await user?.updateOne({$push:{following:req.body.userId}})
+            res.status(200).json(currentUser);
+        }else{
+            res.send(response({
+                status:'nok',
+                error:{
+                    errorCode:'401',
+                    message:'This user already a follower'
+                }
+            }))
+        }
+    }else{ 
+        res.status(400).send(response({
+            status:"nok",
+            error:{
+                errorCode:'401',
+                message:"User can not follow themeselvess"
+            }
+        }))
+    }
+})
+
+//unfollow user
+userRouter.put('/:id/unfollow',async(req,res)=> {
+    if(req.body.userId !== req.params.id){
+        const user = await User.findById(req.params.id)
+        const currentUser = await User.findById(req.body.id)
+        if(currentUser?.followers?.includes(req.params.id)){
+            await currentUser.updateOne({$pull:{followers:req.params.id}})
+            await user?.updateOne({$pull:{following:req.body.userId}})
+            res.status(200).json(user)
+        }else{
+            res.status(401).send(response({
+                status:'nok',
+                error:{
+                    errorCode:'401',
+                    message:'Can only unfollow if you follow this person'
+                }
+            }))
+        }
+    }else{
+        res.status(401).send(response({
+            status:'nok',
+            error:{
+                errorCode:"401",
+                message:`user can't unfollow themeselvess`
+            }
+        }))
+    }
+})
 
 
 export default userRouter;

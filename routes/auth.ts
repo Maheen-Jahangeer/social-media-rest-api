@@ -6,10 +6,8 @@ const authRouter = express.Router();
 
 //Register and save new user
 authRouter.post('/register', async (req: Request, res: Response) => {
-    console.log('user added',req.body)
     try {
         const bcryptedPassword = await bcrypt.hash(req.body.password, 10)
-        console.log('here is placed')
         const newUser = new User({
             username: req.body.username,
             email: req.body.email,
