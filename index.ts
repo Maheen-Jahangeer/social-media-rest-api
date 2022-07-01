@@ -6,19 +6,24 @@ import morgan from "morgan";
 import cors from 'cors';
 import userRouter from './routes/user';
 import authRouter from "./routes/auth";
+import postRouter from "./routes/post";
 
 const app = express();
 app.use(express.json());
 dotenv.config();
 
 //monogdb connection
-mongoose.connect(process.env.MONGODB_URL,()=> {
-    console.log("Database connected");
+mongoose.connect(process.env.MONGODB_URL,(err)=> {
+    if(err){
+        console.log('Connection failed')
+    }else{
+    console.log("Database connected");}
 })
 
 //routes
 app.use('/user', userRouter);
-app.use('/auth', authRouter)
+app.use('/auth', authRouter);
+app.use('/post', postRouter);
 
 //middlewares
 app.use(helmet());
